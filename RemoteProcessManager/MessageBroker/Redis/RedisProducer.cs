@@ -18,7 +18,7 @@ internal class RedisProducer : IProducer
         }
     }
 
-    public void ProduceAsync(string topic, string message, CancellationToken cancellationToken)
+    public void Produce(string topic, string message, CancellationToken cancellationToken)
     {
         try
         {

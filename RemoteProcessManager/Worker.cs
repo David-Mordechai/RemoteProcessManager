@@ -40,7 +40,7 @@ public class Worker : BackgroundService
         }, cancellationToken);
         
         
-        _producer.ProduceAsync(_settings.ProcessTopic, _settings.ProcessFullName, cancellationToken);
+        _producer.Produce(_settings.ProcessTopic, _settings.ProcessFullName, cancellationToken);
     }
 
     private void AgentLogic(CancellationToken cancellationToken)
@@ -56,7 +56,6 @@ public class Worker : BackgroundService
             }
             
             _logger.LogInformation("Starting process - {ProcessFullName}", processFullName);
-            
             _process = new Process();
             _process.StartInfo.FileName = processFullName;
             _process.StartInfo.UseShellExecute = false;
@@ -64,7 +63,7 @@ public class Worker : BackgroundService
             _process.OutputDataReceived += (_, e) =>
             {
                 if (string.IsNullOrEmpty(e.Data)) return;
-                _producer.ProduceAsync(_settings.StreamTopic, e.Data, cancellationToken);
+                _producer.Produce(_settings.StreamTopic, e.Data, cancellationToken);
             };
 
             _process.Start();
