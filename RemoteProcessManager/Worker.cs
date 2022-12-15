@@ -49,17 +49,17 @@ public class Worker : BackgroundService
         {
             if (_process?.HasExited is false)
             {
+                _logger.LogWarning("Closing old process {ProcessId}", _process.Id);
                 _process.CloseMainWindow();
                 _process.Close();
                 _process.Dispose();
             }
             
-            _logger.LogInformation("Starting process - {ProcessFullName}", processFullName);
+            _logger.LogInformation("Starting process - ProcessId {ProcessFullName}", processFullName);
             
             _process = new Process();
             _process.StartInfo.FileName = processFullName;
             _process.StartInfo.UseShellExecute = false;
-            _process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
             _process.StartInfo.RedirectStandardOutput = true;
             _process.OutputDataReceived += (_, e) =>
             {
@@ -68,7 +68,7 @@ public class Worker : BackgroundService
             };
 
             _process.Start();
-
+            _logger.LogInformation("Process started - ProcessId {ProcessId}", _process.Id);
             // Asynchronously read the standard output of the spawned process.
             // This raises OutputDataReceived events for each line of output.
             _process.BeginOutputReadLine();
