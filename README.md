@@ -7,7 +7,7 @@
 ## To start a Agent open terminal at RemoteProcessManager bin directory
 
 ```ps
-    .\RemoteProcessManager.exe 1 5001 127.0.0.1:6379 process-video1 stream-video1</code>
+    .\RemoteProcessManager.exe 1 5001 127.0.0.1:6379 process-video1 stream-video1
 ```
 
 * 1 - RemoteProcessManager Mode - 1 => Agent, 2 => AgentProxy
