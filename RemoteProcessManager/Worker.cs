@@ -22,7 +22,7 @@ public class Worker : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation($"Worker started as {_settings.AgentMode:G}...");
+        _logger.LogInformation("Worker started as {AgentMode}...", _settings.AgentMode.ToString("G"));
 
         if (_settings.AgentMode == ModeType.Agent)
             AgentLogic(stoppingToken);
@@ -36,7 +36,7 @@ public class Worker : BackgroundService
     {
         _consumer.Subscribe(_settings.StreamTopic, logLine =>
         {
-            _logger.LogInformation(logLine);
+            _logger.LogInformation("{LogLine}", logLine);
         }, cancellationToken);
         
         
