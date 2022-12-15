@@ -2,5 +2,5 @@
 
 public interface IProducer : IDisposable
 {
-    Task ProduceAsync(string topic, string message, CancellationToken cancellationToken);
+    void ProduceAsync(string topic, string message, CancellationToken cancellationToken);
 }

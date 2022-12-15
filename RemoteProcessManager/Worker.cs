@@ -20,24 +20,27 @@ public class Worker : BackgroundService
         _producer = producer;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation($"Worker started as {_settings.AgentMode:G}...");
 
         if (_settings.AgentMode == ModeType.Agent)
             AgentLogic(stoppingToken);
         if (_settings.AgentMode == ModeType.AgentProxy)
-            await AgentProxyLogic(stoppingToken);
+            AgentProxyLogic(stoppingToken);
+        
+        return Task.CompletedTask;
     }
 
-    private async Task AgentProxyLogic(CancellationToken cancellationToken)
+    private void AgentProxyLogic(CancellationToken cancellationToken)
     {
         _consumer.Subscribe(_settings.StreamTopic, logLine =>
         {
             _logger.LogInformation(logLine);
         }, cancellationToken);
         
-        await _producer.ProduceAsync(_settings.ProcessTopic, _settings.ProcessFullName, cancellationToken);
+        
+        _producer.ProduceAsync(_settings.ProcessTopic, _settings.ProcessFullName, cancellationToken);
     }
 
     private void AgentLogic(CancellationToken cancellationToken)
@@ -50,15 +53,18 @@ public class Worker : BackgroundService
                 _process.Close();
                 _process.Dispose();
             }
+            
+            _logger.LogInformation("Starting process - {ProcessFullName}", processFullName);
+            
             _process = new Process();
             _process.StartInfo.FileName = processFullName;
             _process.StartInfo.UseShellExecute = false;
             _process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
             _process.StartInfo.RedirectStandardOutput = true;
-            _process.OutputDataReceived += async (_, e) =>
+            _process.OutputDataReceived += (_, e) =>
             {
                 if (string.IsNullOrEmpty(e.Data)) return;
-                await _producer.ProduceAsync(_settings.StreamTopic, e.Data, cancellationToken);
+                _producer.ProduceAsync(_settings.StreamTopic, e.Data, cancellationToken);
             };
 
             _process.Start();

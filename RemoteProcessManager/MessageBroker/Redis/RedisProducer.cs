@@ -18,14 +18,14 @@ internal class RedisProducer : IProducer
         }
     }
 
-    public async Task ProduceAsync(string topic, string message, CancellationToken cancellationToken)
+    public void ProduceAsync(string topic, string message, CancellationToken cancellationToken)
     {
         try
         {
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException();
 
-            await _producer.PublishAsync(topic, message);
+            _producer.Publish(topic, message);
         }
         catch (Exception e)
         {
