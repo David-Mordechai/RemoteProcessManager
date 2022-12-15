@@ -34,8 +34,7 @@ public class Worker : BackgroundService
     {
         _consumer.Subscribe(_settings.StreamTopic, logLine =>
         {
-            //_logger.LogInformation(logLine);
-            Console.WriteLine(logLine);
+            _logger.LogInformation(logLine);
         }, cancellationToken);
         
         await _producer.ProduceAsync(_settings.ProcessTopic, _settings.ProcessFullName, cancellationToken);
