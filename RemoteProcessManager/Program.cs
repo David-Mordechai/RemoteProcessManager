@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting.WindowsServices;
 using RemoteProcessManager;
 using RemoteProcessManager.Enums;
+using RemoteProcessManager.Managers;
 using RemoteProcessManager.MessageBroker;
 using RemoteProcessManager.MessageBroker.Redis;
 
@@ -32,6 +33,7 @@ var settings = new Settings
 builder.Services.AddSingleton(settings);
 builder.Services.AddSingleton<IProducer, RedisProducer>();
 builder.Services.AddSingleton<IConsumer, RedisConsumer>();
+builder.Services.AddSingleton<IProcessManager, ProcessManager>();
 builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
