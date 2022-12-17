@@ -1,19 +1,11 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting.WindowsServices;
 using RemoteProcessManager;
 using RemoteProcessManager.Enums;
 using RemoteProcessManager.Managers;
 using RemoteProcessManager.MessageBroker;
 using RemoteProcessManager.MessageBroker.Redis;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    Args = args,
-    ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default,
-    ApplicationName = Process.GetCurrentProcess().ProcessName
-});
-builder.Host.UseWindowsService();
+var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
