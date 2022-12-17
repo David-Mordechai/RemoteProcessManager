@@ -31,13 +31,13 @@ public class Worker : BackgroundService
                 processFullName =>
                 {
                     _processManager.StartProcess(processFullName,
-                        outputData => { _producer.Produce(_settings.StreamTopic, outputData, cancellationToken); });
+                        outputData => _producer.Produce(_settings.StreamTopic, outputData, cancellationToken));
                 }, cancellationToken);
         }
         
         if (_settings.AgentMode == ModeType.AgentProxy)
         {
-            _consumer.Subscribe(_settings.StreamTopic, logLine => { _logger.LogInformation("{LogLine}", logLine); },
+            _consumer.Subscribe(_settings.StreamTopic, logLine => _logger.LogInformation("{LogLine}", logLine),
                 cancellationToken);
 
             _producer.Produce(_settings.ProcessTopic, _settings.ProcessFullName, cancellationToken);
