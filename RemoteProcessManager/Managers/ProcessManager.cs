@@ -16,9 +16,9 @@ internal class ProcessManager : IProcessManager
     {
         if (_process?.HasExited is false)
         {
-            _logger.LogWarning("Closing old process - ProcessId {ProcessId}", _process.Id);
-            _process.CloseMainWindow();
-            _process.Close();
+            _logger.LogWarning("Killing old process - ProcessId {ProcessId}", _process.Id);
+            _process.Kill();
+            _process.WaitForExit();
             _process.Dispose();
         }
 
