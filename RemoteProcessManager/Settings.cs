@@ -10,4 +10,5 @@ public class Settings
     public string ProcessTopic { get; set; } = default!;
     public string StreamTopic { get; set; } = default!;
     public string ProcessFullName { get; set; } = default!;
+    public string ProcessArguments { get; set; } = default!;
 }

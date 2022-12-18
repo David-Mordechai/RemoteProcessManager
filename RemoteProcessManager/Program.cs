@@ -19,7 +19,8 @@ var settings = new Settings
     MessageBrokerUrl = isFromArgs ? args[2] : jsonSettings!.MessageBrokerUrl,
     ProcessTopic = isFromArgs ? args[3] : jsonSettings!.ProcessTopic,
     StreamTopic = isFromArgs ? args[4] : jsonSettings!.StreamTopic,
-    ProcessFullName = args.Length == 6 ? args[5] : jsonSettings!.ProcessFullName
+    ProcessFullName = args.Length >= 6 ? args[5] : jsonSettings!.ProcessFullName,
+    ProcessArguments = args.Length >= 7 ? args[6] : jsonSettings!.ProcessArguments
 };
 
 builder.Services.AddSingleton(settings);

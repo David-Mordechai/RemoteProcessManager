@@ -12,7 +12,7 @@ internal class ProcessManager : IProcessManager
         _logger = logger;
     }
 
-    public void StartProcess(string processFullName, Action<string> onOutputData)
+    public void StartProcess(string processFullName, string processArguments, Action<string> onOutputData)
     {
         if(File.Exists(processFullName) is false)
         {
@@ -36,6 +36,7 @@ internal class ProcessManager : IProcessManager
             onOutputData.Invoke($"Starting process - {processFullName}");
             _process = new Process();
             _process.StartInfo.FileName = processFullName;
+            _process.StartInfo.Arguments = processArguments;
             _process.StartInfo.UseShellExecute = false;
             _process.StartInfo.RedirectStandardOutput = true;
             _process.OutputDataReceived += (_, e) =>

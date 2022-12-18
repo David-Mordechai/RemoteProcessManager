@@ -1,6 +1,8 @@
-﻿using RemoteProcessManager.Enums;
+﻿using System.Text.Json;
+using RemoteProcessManager.Enums;
 using RemoteProcessManager.Managers;
 using RemoteProcessManager.MessageBroker;
+using RemoteProcessManager.Models;
 
 namespace RemoteProcessManager;
 
@@ -28,19 +30,26 @@ public class Worker : BackgroundService
         if (_settings.AgentMode == ModeType.Agent)
         {
             _consumer.Subscribe(_settings.ProcessTopic,
-                processFullName =>
+                processModelJson =>
                 {
-                    _processManager.StartProcess(processFullName,
+                    var processModel = JsonSerializer.Deserialize<ProcessModel>(processModelJson)!;
+                    
+                    _processManager.StartProcess(processModel.FullName, processModel.Arguments,
                         outputData => _producer.Produce(_settings.StreamTopic, outputData, cancellationToken));
                 }, cancellationToken);
         }
         
         if (_settings.AgentMode == ModeType.AgentProxy)
         {
-            _consumer.Subscribe(_settings.StreamTopic, logLine => _logger.LogInformation("{LogLine}", logLine),
-                cancellationToken);
+            _consumer.Subscribe(_settings.StreamTopic, Console.WriteLine, cancellationToken);
 
-            _producer.Produce(_settings.ProcessTopic, _settings.ProcessFullName, cancellationToken);
+            var processModelJson = JsonSerializer.Serialize(new ProcessModel
+            {
+                FullName = _settings.ProcessFullName, 
+                Arguments = _settings.ProcessArguments
+            });
+            
+            _producer.Produce(_settings.ProcessTopic, processModelJson, cancellationToken);
         }
         
         return Task.CompletedTask;

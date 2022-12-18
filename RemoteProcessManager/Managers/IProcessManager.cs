@@ -2,5 +2,5 @@
 
 public interface IProcessManager
 {
-    void StartProcess(string processFullName, Action<string> onOutputData);
+    void StartProcess(string processFullName, string processArguments, Action<string> onOutputData);
 }
