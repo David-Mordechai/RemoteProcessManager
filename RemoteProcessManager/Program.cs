@@ -13,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 var isFromArgs = args.Length >= 4;
 var jsonSettings = builder.Configuration.GetSection(nameof(Settings)).Get<Settings>();
+//CommandLineParser - nuget package
 var settings = new Settings
 {
     AgentMode = isFromArgs ? (ModeType)int.Parse(args[0]) : jsonSettings!.AgentMode,
