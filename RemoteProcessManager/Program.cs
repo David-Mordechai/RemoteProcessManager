@@ -4,6 +4,7 @@ using RemoteProcessManager.Enums;
 using RemoteProcessManager.Managers;
 using RemoteProcessManager.MessageBroker;
 using RemoteProcessManager.MessageBroker.Redis;
+using RemoteProcessManager.Models;
 
 var builder = WebApplication.CreateBuilder();
 

@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using RemoteProcessManager.Models;
+using StackExchange.Redis;
 
 namespace RemoteProcessManager.MessageBroker.Redis;
 

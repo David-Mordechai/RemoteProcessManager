@@ -1,6 +1,6 @@
 ﻿using RemoteProcessManager.Enums;
 
-namespace RemoteProcessManager;
+namespace RemoteProcessManager.Models;
 
 public class Settings
 {
