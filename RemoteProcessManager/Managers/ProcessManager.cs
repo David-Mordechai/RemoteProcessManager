@@ -23,14 +23,7 @@ internal class ProcessManager : IProcessManager
 
         try
         {
-            if (_process?.HasExited is false)
-            {
-                _logger.LogWarning("Killing old process - ProcessId {ProcessId}", _process.Id);
-                onOutputData.Invoke($"Killing old process - ProcessId {_process.Id}");
-                _process.Kill();
-                _process.WaitForExit();
-                _process.Dispose();
-            }
+            StopProcess();
 
             _logger.LogInformation("Starting process - {ProcessFullName}", processFullName);
             onOutputData.Invoke($"Starting process - {processFullName}");
@@ -59,5 +52,15 @@ internal class ProcessManager : IProcessManager
             _logger.LogError(e, "Start process Failed - {ProcessFullName}", processFullName);
             onOutputData.Invoke($"Start process Failed - {processFullName}, Error: {e.Message}");
         }
+    }
+
+    public void StopProcess()
+    {
+        if (_process?.HasExited is not false) return;
+        _logger.LogWarning("Killing old process - ProcessId {ProcessId}", _process.Id);
+        _process.Kill();
+        _process.WaitForExit();
+        _process.Dispose();
+        _process = null;
     }
 }

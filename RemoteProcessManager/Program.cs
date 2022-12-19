@@ -10,17 +10,16 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var isFromArgs = args.Length >= 5;
+var isFromArgs = args.Length >= 4;
 var jsonSettings = builder.Configuration.GetSection(nameof(Settings)).Get<Settings>();
 var settings = new Settings
 {
     AgentMode = isFromArgs ? (ModeType)int.Parse(args[0]) : jsonSettings!.AgentMode,
-    HttpPort = isFromArgs ? int.Parse(args[1]) : jsonSettings!.HttpPort,
+    AgentName = isFromArgs ? args[1] : jsonSettings!.AgentName,
     MessageBrokerUrl = isFromArgs ? args[2] : jsonSettings!.MessageBrokerUrl,
-    ProcessTopic = isFromArgs ? args[3] : jsonSettings!.ProcessTopic,
-    StreamTopic = isFromArgs ? args[4] : jsonSettings!.StreamTopic,
-    ProcessFullName = args.Length >= 6 ? args[5] : jsonSettings!.ProcessFullName,
-    ProcessArguments = args.Length >= 7 ? args[6] : jsonSettings!.ProcessArguments
+    HttpPort = isFromArgs ? int.Parse(args[3]) : jsonSettings!.HttpPort,
+    ProcessFullName = args.Length >= 5 ? args[4] : jsonSettings!.ProcessFullName,
+    ProcessArguments = args.Length >= 6 ? args[5] : jsonSettings!.ProcessArguments
 };
 
 builder.Services.AddSingleton(settings);
