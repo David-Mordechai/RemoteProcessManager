@@ -23,4 +23,8 @@ public class Settings
 
     [Option('p', "process-args", HelpText = "Set remote process arguments")]
     public string ProcessArguments { get; set; } = default!;
+
+    public string StartProcessTopic => $"start_process_{AgentName}";
+    public string StreamLogsTopic => $"stream_logs_{AgentName}";
+    public string StopProcessTopic => $"stop_process_{AgentName}";
 }

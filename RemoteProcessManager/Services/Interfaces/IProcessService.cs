@@ -1,9 +1,9 @@
-﻿using RemoteProcessManager.Models;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using RemoteProcessManager.Models;
 
-namespace RemoteProcessManager.Managers.Interfaces;
+namespace RemoteProcessManager.Services.Interfaces;
 
-public interface IProcessManager
+public interface IProcessService
 {
     void StartProcess(RemoteProcessModel processModel, Action<string> streamLogsAction);
     void StopProcess();

@@ -1,20 +1,19 @@
 ﻿using System.Text.Json;
-using RemoteProcessManager.Managers.Interfaces;
-using RemoteProcessManager.Models;
+using RemoteProcessManager.Services.Interfaces;
 
-namespace RemoteProcessManager.Managers;
+namespace RemoteProcessManager.Services;
 
-internal class TempFileManager : ICacheManager
+internal class TempFileService<T> : ICacheService<T>
 {
-    private readonly ILogger<TempFileManager> _logger;
-    public RemoteProcessModel? CachedRemoteProcessModel { get; private set; }
+    private readonly ILogger<TempFileService<T>> _logger;
+    private T? _cachedObject;
 
-    public TempFileManager(ILogger<TempFileManager> logger)
+    public TempFileService(ILogger<TempFileService<T>> logger)
     {
         _logger = logger;
     }
-    
-    public void Save(string fileName, RemoteProcessModel content)
+
+    public void Save(string fileName, T content)
     {
         var tempFilePath = Path.GetTempPath();
         var tempFile = $"{tempFilePath}tmp_{fileName}.tmp";
@@ -24,7 +23,7 @@ internal class TempFileManager : ICacheManager
             using var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write);
             using var streamWriter = new StreamWriter(fileStream);
             streamWriter.WriteLine(jsonContent);
-            CachedRemoteProcessModel = content;
+            _cachedObject = content;
         }
         catch (Exception e)
         {
@@ -32,9 +31,9 @@ internal class TempFileManager : ICacheManager
         }
     }
 
-    public RemoteProcessModel? Get(string fileName)
+    public T? Get(string fileName)
     {
-        if(CachedRemoteProcessModel is not null) return CachedRemoteProcessModel;
+        if (_cachedObject is not null) return _cachedObject;
 
         var tempFilePath = Path.GetTempPath();
         var tempFile = $"{tempFilePath}tmp_{fileName}.tmp";
@@ -44,8 +43,9 @@ internal class TempFileManager : ICacheManager
         {
             using var reader = new StreamReader(fs);
             var content = reader.ReadToEnd();
-            var processModel = JsonSerializer.Deserialize<RemoteProcessModel>(content)!;
-            return processModel;
+            var obj = JsonSerializer.Deserialize<T>(content)!;
+            _cachedObject = obj;
+            return obj;
         }
         catch (Exception e)
         {
@@ -61,8 +61,8 @@ internal class TempFileManager : ICacheManager
         if (File.Exists(tempFile) is false) return;
         try
         {
-            File.Delete(tempFilePath);
-            CachedRemoteProcessModel = null;
+            File.Delete(tempFile);
+            _cachedObject = default;
         }
         catch (Exception e)
         {

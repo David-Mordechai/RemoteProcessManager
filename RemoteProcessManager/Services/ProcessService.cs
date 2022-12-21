@@ -1,23 +1,23 @@
 ﻿using System.Diagnostics;
-using RemoteProcessManager.Managers.Interfaces;
 using RemoteProcessManager.Models;
+using RemoteProcessManager.Services.Interfaces;
 
-namespace RemoteProcessManager.Managers;
+namespace RemoteProcessManager.Services;
 
-internal class ProcessManager : IProcessManager
+internal class ProcessService : IProcessService
 {
-    private readonly ILogger<ProcessManager> _logger;
+    private readonly ILogger<ProcessService> _logger;
     private readonly Settings _settings;
-    private readonly ICacheManager _cacheManager;
-    
-    
+    private readonly ICacheService<RemoteProcessModel> _cacheService;
+
+
     public event EventHandler<RemoteProcessModel>? OnRestartProcess;
 
-    public ProcessManager(ILogger<ProcessManager> logger, Settings settings, ICacheManager cacheManager)
+    public ProcessService(ILogger<ProcessService> logger, Settings settings, ICacheService<RemoteProcessModel> cacheService)
     {
         _logger = logger;
         _settings = settings;
-        _cacheManager = cacheManager;
+        _cacheService = cacheService;
     }
 
     public void StartProcess(RemoteProcessModel processModel, Action<string> streamLogsAction)
@@ -34,7 +34,7 @@ internal class ProcessManager : IProcessManager
             StopProcess();
             _logger.LogInformation("Starting process - {ProcessFullName}", processModel.FullName);
             streamLogsAction.Invoke($"Starting process - {processModel.FullName}");
-  
+
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -53,7 +53,7 @@ internal class ProcessManager : IProcessManager
             process.BeginErrorReadLine();
 
             processModel.ProcessId = process.Id;
-            _cacheManager.Save(_settings.AgentName, processModel);
+            _cacheService.Save(_settings.AgentName, processModel);
 
             _logger.LogInformation("Process started - ProcessId {ProcessId}", process.Id);
             streamLogsAction.Invoke($"Process started - ProcessId {process.Id}");
@@ -77,7 +77,7 @@ internal class ProcessManager : IProcessManager
             _logger.LogInformation("Attaching to running process - {ProcessId}", processModel.ProcessId);
             streamLogsAction.Invoke($"Attaching to running process - {processModel.ProcessId}");
             AttachEventsToProcess(process, streamLogsAction);
-            
+
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
@@ -94,8 +94,8 @@ internal class ProcessManager : IProcessManager
 
     private void AttachEventsToProcess(Process? process, Action<string> streamLogsAction)
     {
-        if(process is null) return;
-        
+        if (process is null) return;
+
         process.OutputDataReceived += (_, e) =>
         {
             if (string.IsNullOrEmpty(e.Data)) return;
@@ -108,25 +108,25 @@ internal class ProcessManager : IProcessManager
             _logger.LogInformation("Attempt to restart process...");
             streamLogsAction.Invoke($"Error occurred in remote process: {e.Data}");
             streamLogsAction.Invoke("Attempt to restart process...");
-            var cachedRemoteProcessModel = _cacheManager.Get(_settings.AgentName);
+            var cachedRemoteProcessModel = _cacheService.Get(_settings.AgentName);
             if (cachedRemoteProcessModel is not null) OnRestartProcess?.Invoke(this, cachedRemoteProcessModel);
         };
     }
 
     public void StopProcess()
     {
-        var cachedRemoteProcessModel = _cacheManager.Get(_settings.AgentName);
+        var cachedRemoteProcessModel = _cacheService.Get(_settings.AgentName);
         if (cachedRemoteProcessModel is null) return;
         var process = GetRunningProcess(cachedRemoteProcessModel.ProcessId);
         if (process?.HasExited is not false) return;
-        
+
         _logger.LogWarning("Killing old process - ProcessId {ProcessId}", process.Id);
-        
+
         process.Kill();
         process.WaitForExit();
         process.Dispose();
 
-        _cacheManager.Delete(_settings.AgentName);
+        _cacheService.Delete(_settings.AgentName);
     }
 
     public Process? GetRunningProcess(int? processId)
@@ -135,9 +135,3 @@ internal class ProcessManager : IProcessManager
         return process;
     }
 }
-
-/*
- * 1. agent need to start from temp file
-   2. if remote process crashes and not canceled then kill agent process for watch dog to started again
-   3. after watch dog started again agent check if remote process is running than connect to it and subscribe to stream output again
- */
