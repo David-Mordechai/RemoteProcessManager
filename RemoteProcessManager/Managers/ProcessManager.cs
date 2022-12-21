@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using RemoteProcessManager.Managers.Interfaces;
 using RemoteProcessManager.Models;
 
@@ -19,7 +18,6 @@ internal class ProcessManager : IProcessManager
         _logger = logger;
         _settings = settings;
         _cacheManager = cacheManager;
-        
     }
 
     public void StartProcess(RemoteProcessModel processModel, Action<string> streamLogsAction)
@@ -120,11 +118,15 @@ internal class ProcessManager : IProcessManager
         if(_cachedRemoteProcessModel is null) return;
         var process = GetRunningProcess(_cachedRemoteProcessModel.ProcessId);
         if (process?.HasExited is not false) return;
+        
         _logger.LogWarning("Killing old process - ProcessId {ProcessId}", process.Id);
-        _cacheManager.Delete(_settings.AgentName);
+        
         process.Kill();
         process.WaitForExit();
         process.Dispose();
+
+        _cacheManager.Delete(_settings.AgentName);
+        _cachedRemoteProcessModel = null;
     }
 
     public Process? GetRunningProcess(int? processId)
