@@ -9,7 +9,7 @@ internal class ProcessManager : IProcessManager
     private readonly ILogger<ProcessManager> _logger;
     private readonly Settings _settings;
     private readonly ICacheManager _cacheManager;
-    private RemoteProcessModel? _cachedRemoteProcessModel;
+    
     
     public event EventHandler<RemoteProcessModel>? OnRestartProcess;
 
@@ -54,7 +54,6 @@ internal class ProcessManager : IProcessManager
 
             processModel.ProcessId = process.Id;
             _cacheManager.Save(_settings.AgentName, processModel);
-            _cachedRemoteProcessModel = processModel;
 
             _logger.LogInformation("Process started - ProcessId {ProcessId}", process.Id);
             streamLogsAction.Invoke($"Process started - ProcessId {process.Id}");
@@ -109,14 +108,16 @@ internal class ProcessManager : IProcessManager
             _logger.LogInformation("Attempt to restart process...");
             streamLogsAction.Invoke($"Error occurred in remote process: {e.Data}");
             streamLogsAction.Invoke("Attempt to restart process...");
-            if(_cachedRemoteProcessModel is not null) OnRestartProcess?.Invoke(this, _cachedRemoteProcessModel);
+            var cachedRemoteProcessModel = _cacheManager.Get(_settings.AgentName);
+            if (cachedRemoteProcessModel is not null) OnRestartProcess?.Invoke(this, cachedRemoteProcessModel);
         };
     }
 
     public void StopProcess()
     {
-        if(_cachedRemoteProcessModel is null) return;
-        var process = GetRunningProcess(_cachedRemoteProcessModel.ProcessId);
+        var cachedRemoteProcessModel = _cacheManager.Get(_settings.AgentName);
+        if (cachedRemoteProcessModel is null) return;
+        var process = GetRunningProcess(cachedRemoteProcessModel.ProcessId);
         if (process?.HasExited is not false) return;
         
         _logger.LogWarning("Killing old process - ProcessId {ProcessId}", process.Id);
@@ -126,7 +127,6 @@ internal class ProcessManager : IProcessManager
         process.Dispose();
 
         _cacheManager.Delete(_settings.AgentName);
-        _cachedRemoteProcessModel = null;
     }
 
     public Process? GetRunningProcess(int? processId)

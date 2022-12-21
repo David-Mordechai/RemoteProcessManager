@@ -1,18 +1,20 @@
 ﻿using System.Text.Json;
 using RemoteProcessManager.Managers.Interfaces;
+using RemoteProcessManager.Models;
 
 namespace RemoteProcessManager.Managers;
 
 internal class TempFileManager : ICacheManager
 {
     private readonly ILogger<TempFileManager> _logger;
+    public RemoteProcessModel? CachedRemoteProcessModel { get; private set; }
 
     public TempFileManager(ILogger<TempFileManager> logger)
     {
         _logger = logger;
     }
     
-    public void Save<T>(string fileName, T content)
+    public void Save(string fileName, RemoteProcessModel content)
     {
         var tempFilePath = Path.GetTempPath();
         var tempFile = $"{tempFilePath}tmp_{fileName}.tmp";
@@ -22,6 +24,7 @@ internal class TempFileManager : ICacheManager
             using var fileStream = new FileStream(tempFile, FileMode.Create, FileAccess.Write);
             using var streamWriter = new StreamWriter(fileStream);
             streamWriter.WriteLine(jsonContent);
+            CachedRemoteProcessModel = content;
         }
         catch (Exception e)
         {
@@ -29,8 +32,10 @@ internal class TempFileManager : ICacheManager
         }
     }
 
-    public T? Get<T>(string fileName)
+    public RemoteProcessModel? Get(string fileName)
     {
+        if(CachedRemoteProcessModel is not null) return CachedRemoteProcessModel;
+
         var tempFilePath = Path.GetTempPath();
         var tempFile = $"{tempFilePath}tmp_{fileName}.tmp";
         if (File.Exists(tempFile) is false) return default;
@@ -39,7 +44,7 @@ internal class TempFileManager : ICacheManager
         {
             using var reader = new StreamReader(fs);
             var content = reader.ReadToEnd();
-            var processModel = JsonSerializer.Deserialize<T>(content)!;
+            var processModel = JsonSerializer.Deserialize<RemoteProcessModel>(content)!;
             return processModel;
         }
         catch (Exception e)
@@ -57,6 +62,7 @@ internal class TempFileManager : ICacheManager
         try
         {
             File.Delete(tempFilePath);
+            CachedRemoteProcessModel = null;
         }
         catch (Exception e)
         {

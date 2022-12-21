@@ -38,7 +38,7 @@ public class Worker : BackgroundService
 
         if (_settings.AgentMode == ModeType.Agent)
         {
-            var cachedRemoteProcessModel = _cacheManager.Get<RemoteProcessModel>(_settings.AgentName);
+            var cachedRemoteProcessModel = _cacheManager.Get(_settings.AgentName);
             if (cachedRemoteProcessModel is not null)
                 StartOrAttachProcess(cachedRemoteProcessModel);
 
