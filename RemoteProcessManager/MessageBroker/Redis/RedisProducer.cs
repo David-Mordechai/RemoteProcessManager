@@ -19,13 +19,10 @@ internal class RedisProducer : IProducer
         }
     }
 
-    public void Produce(string topic, string message, CancellationToken cancellationToken)
+    public void Produce(string topic, string message)
     {
         try
         {
-            if (cancellationToken.IsCancellationRequested)
-                throw new OperationCanceledException();
-
             _producer.Publish(topic, message);
         }
         catch (Exception e)

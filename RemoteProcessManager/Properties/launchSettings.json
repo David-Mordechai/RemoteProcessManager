@@ -2,6 +2,7 @@
   "profiles": {
     "ProcessManager.Server": {
       "commandName": "Project",
+      "commandLineArgs": " 1 video1 127.0.0.1:6379 5001",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using RemoteProcessManager;
 using RemoteProcessManager.Enums;
 using RemoteProcessManager.Managers;
+using RemoteProcessManager.Managers.Interfaces;
 using RemoteProcessManager.MessageBroker;
 using RemoteProcessManager.MessageBroker.Redis;
 using RemoteProcessManager.Models;
@@ -28,6 +29,7 @@ builder.Services.AddSingleton(settings);
 builder.Services.AddSingleton<IProducer, RedisProducer>();
 builder.Services.AddSingleton<IConsumer, RedisConsumer>();
 builder.Services.AddSingleton<IProcessManager, ProcessManager>();
+builder.Services.AddSingleton<ICacheManager, TempFileManager>();
 builder.Services.AddHostedService<Worker>();
 
 var app = builder.Build();
