@@ -1,3 +1,4 @@
+using CommandLine;
 using Microsoft.AspNetCore.Mvc;
 using RemoteProcessManager;
 using RemoteProcessManager.Enums;
@@ -12,8 +13,13 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var isFromArgs = args.Length >= 4;
 var jsonSettings = builder.Configuration.GetSection(nameof(Settings)).Get<Settings>();
+
+var result = Parser.Default.ParseArguments<Options>(args);
+if (result.Errors.Any())
+    return;
+
+var isFromArgs = args.Length >= 4;
 //CommandLineParser - nuget package
 var settings = new Settings
 {
@@ -43,3 +49,18 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/processManager", ([FromServices] Settings appSettings) => $"Running in mode {appSettings.AgentMode:G}");
 
 app.Run($"http://*:{settings.HttpPort}");
+
+public class Options
+{
+    [Option('t', "agent-type", Required = true, HelpText = "Set Agent type, 1 = Agent, 2 = ProxyAgent")]
+    public ModeType? AgentType { get; set; }
+
+    [Option('n', "agent-name", HelpText = "Set Agent Name, for example video1, this name will be use for creating message broker topics")]
+    public string? AgentName { get; set; }
+
+    [Option('u', "messageBroker-url", HelpText = "Set MessageBroker Url, for example, redis url 127.0.0.1:6379")]
+    public string? MessageBrokerUrl { get; set; }
+
+    [Option('p', "http-port", HelpText = "Set Http Port, port for rest api")]
+    public ulong? HttpPort { get; set; }
+}
