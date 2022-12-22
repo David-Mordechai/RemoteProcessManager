@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ProcessManager.Server": {
+    "RemoteProcessManager": {
       "commandName": "Project",
       "commandLineArgs": "--agent-mode 1 --agent-name video1 --messageBroker-url 127.0.0.1:6379 --http-port 5001",
       "launchBrowser": true,

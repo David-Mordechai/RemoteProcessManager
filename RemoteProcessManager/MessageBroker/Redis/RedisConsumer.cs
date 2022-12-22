@@ -5,11 +5,13 @@ namespace RemoteProcessManager.MessageBroker.Redis;
 
 internal class RedisConsumer : IConsumer
 {
+    private readonly ILogger<RedisConsumer> _logger;
     private readonly ISubscriber _consumer;
-    private readonly ConnectionMultiplexer _redis;
+    private readonly ConnectionMultiplexer? _redis;
 
-    public RedisConsumer(Settings settings)
+    public RedisConsumer(ILogger<RedisConsumer> logger, Settings settings)
     {
+        _logger = logger;
         _redis = ConnectionMultiplexer.Connect(settings.MessageBrokerUrl);
         _consumer = _redis.GetSubscriber();
 
@@ -26,26 +28,18 @@ internal class RedisConsumer : IConsumer
         {
             _consumer.Subscribe(topic, (_, message) =>
             {
-                if (cancellationToken.IsCancellationRequested)
-                    throw new OperationCanceledException();
-
                 if (string.IsNullOrEmpty(message) is false)
                     consumeMessageHandler.Invoke(message!);
             });
         }
         catch (Exception ex)
         {
-            throw ex switch
-            {
-                OperationCanceledException => new Exception("Operation was canceled."),
-                _ => new Exception(ex.Message)
-            };
+            _logger.LogError(ex, "RedisConsumer failed, {Error}", ex?.Message);
         }
     }
 
     public void Dispose()
     {
-        _redis.Dispose();
-        GC.SuppressFinalize(this);
+        _redis?.Dispose();
     }
 }

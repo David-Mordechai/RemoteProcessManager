@@ -29,67 +29,83 @@ internal class ProcessService : IProcessService
             return;
         }
 
-        try
+        Task.Factory.StartNew(() =>
         {
-            StopProcess();
-            _logger.LogInformation("Starting process - {ProcessFullName}", processModel.FullName);
-            streamLogsAction.Invoke($"Starting process - {processModel.FullName}");
-
-            var process = new Process
+            try
             {
-                StartInfo = new ProcessStartInfo
+                StopProcess();
+                _logger.LogInformation("Starting process - {ProcessFullName}", processModel.FullName);
+                streamLogsAction.Invoke($"Starting process - {processModel.FullName}");
+
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = processModel.FullName,
+                        Arguments = processModel.Arguments,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    }
+                };
+                AttachEventsToProcess(process, streamLogsAction);
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                processModel.ProcessId = process.Id;
+                _cacheService.Save(_settings.AgentName, processModel);
+
+                _logger.LogInformation("Process started - ProcessId {ProcessId}", process.Id);
+                streamLogsAction.Invoke($"Process started - ProcessId {process.Id}");
+
+                // Wait for the process to exit and release resources
+                process.WaitForExit();
+                process.Close();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Start process Failed - {ProcessFullName}", processModel.FullName);
+                streamLogsAction.Invoke($"Start process Failed - {processModel.FullName}, Error: {e.Message}");
+            }
+        });
+    }
+
+    public void AttachToProcess(RemoteProcessModel processModel, Process process,
+        Action<string> streamLogsAction)
+    {
+        Task.Factory.StartNew(() =>
+        {
+            try
+            {
+                _logger.LogInformation("Attaching to running process - {ProcessId}", processModel.ProcessId);
+                streamLogsAction.Invoke($"Attaching to running process - {processModel.ProcessId}");
+                AttachEventsToProcess(process, streamLogsAction);
+                var startInfo = new ProcessStartInfo
                 {
                     FileName = processModel.FullName,
                     Arguments = processModel.Arguments,
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true
-                }
-            };
-            AttachEventsToProcess(process, streamLogsAction);
+                };
+                process.StartInfo = startInfo;
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            processModel.ProcessId = process.Id;
-            _cacheService.Save(_settings.AgentName, processModel);
-
-            _logger.LogInformation("Process started - ProcessId {ProcessId}", process.Id);
-            streamLogsAction.Invoke($"Process started - ProcessId {process.Id}");
-
-            // Wait for the process to exit and release resources
-            process.WaitForExit();
-            process.Close();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Start process Failed - {ProcessFullName}", processModel.FullName);
-            streamLogsAction.Invoke($"Start process Failed - {processModel.FullName}, Error: {e.Message}");
-        }
-    }
-
-    public void AttachToProcess(RemoteProcessModel processModel, Process process,
-        Action<string> streamLogsAction)
-    {
-        try
-        {
-            _logger.LogInformation("Attaching to running process - {ProcessId}", processModel.ProcessId);
-            streamLogsAction.Invoke($"Attaching to running process - {processModel.ProcessId}");
-            AttachEventsToProcess(process, streamLogsAction);
-
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            // Wait for the process to exit and release resources
-            process.WaitForExit();
-            process.Close();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Fail to attach to running process - {ProcessId}", processModel.ProcessId);
-            streamLogsAction.Invoke($"Fail to attach to running process - {processModel.ProcessId}, Error: {e.Message}");
-        }
+                // Wait for the process to exit and release resources
+                process.WaitForExit();
+                process.Close();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Fail to attach to running process - {ProcessId}", processModel.ProcessId);
+                streamLogsAction.Invoke(
+                    $"Fail to attach to running process - {processModel.ProcessId}, Error: {e.Message}");
+            }
+        });
     }
 
     private void AttachEventsToProcess(Process? process, Action<string> streamLogsAction)
@@ -120,8 +136,7 @@ internal class ProcessService : IProcessService
         var process = GetRunningProcess(cachedRemoteProcessModel.ProcessId);
         if (process?.HasExited is not false) return;
 
-        _logger.LogWarning("Killing old process - ProcessId {ProcessId}", process.Id);
-
+        _logger.LogWarning("Process stopped - ProcessId {ProcessId}", process.Id);
         process.Kill();
         process.WaitForExit();
         process.Dispose();
