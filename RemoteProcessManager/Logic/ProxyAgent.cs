@@ -7,25 +7,25 @@ namespace RemoteProcessManager.Logic;
 
 internal class ProxyAgent : IAgent
 {
-    private readonly ILogger<ProxyAgent> _logger;
     private readonly Settings _settings;
     private readonly IConsumer _consumer;
     private readonly IProducer _producer;
+    private readonly IHostApplicationLifetime _lifetime;
 
-    public ProxyAgent(ILogger<ProxyAgent> logger, Settings settings,
-        IConsumer consumer, IProducer producer)
+    public ProxyAgent(Settings settings,
+        IConsumer consumer, IProducer producer, IHostApplicationLifetime lifetime)
     {
-        _logger = logger;
         _settings = settings;
         _consumer = consumer;
         _producer = producer;
+        _lifetime = lifetime;
     }
 
     public void Start(CancellationToken cancellationToken)
     {
-        Console.CancelKeyPress += (_, _) => StopProcess(cancellationToken);
-        //cancellationToken.Register(() => StopProcess(cancellationToken));
-        
+        Console.CancelKeyPress += (_, _) => { _lifetime.StopApplication(); };
+        cancellationToken.Register(() => _producer.Produce(_settings.StopProcessTopic, "stop", cancellationToken));
+
         _producer.Produce(_settings.StartProcessTopic, JsonSerializer.Serialize(new RemoteProcessModel
         {
             FullName = _settings.ProcessFullName,
@@ -33,12 +33,5 @@ internal class ProxyAgent : IAgent
         }), cancellationToken);
 
         _consumer.Subscribe(_settings.StreamLogsTopic, Console.WriteLine, cancellationToken);
-    }
-
-    private void StopProcess(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Stopping remote process...");
-        _producer.Produce(_settings.StopProcessTopic, "stop", cancellationToken);
-        Thread.Sleep(1000);
     }
 }

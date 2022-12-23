@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Threading;
 using RemoteProcessManager.Logic.Interfaces;
 using RemoteProcessManager.MessageBroker;
 using RemoteProcessManager.Models;
@@ -9,17 +8,15 @@ namespace RemoteProcessManager.Logic;
 
 internal class Agent : IAgent
 {
-    private readonly ILogger<Agent> _logger;
     private readonly Settings _settings;
     private readonly IConsumer _consumer;
     private readonly IProducer _producer;
     private readonly IProcessService _processService;
     private readonly ICacheService<RemoteProcessModel> _cacheService;
 
-    public Agent(ILogger<Agent> logger, Settings settings,
+    public Agent(Settings settings,
         IConsumer consumer, IProducer producer, IProcessService processService, ICacheService<RemoteProcessModel> cacheService)
     {
-        _logger = logger;
         _settings = settings;
         _consumer = consumer;
         _producer = producer;
@@ -41,9 +38,8 @@ internal class Agent : IAgent
                 StartOrAttachProcess(processModel, cancellationToken);
             }, cancellationToken);
 
-        _consumer.Subscribe(_settings.StopProcessTopic, message =>
+        _consumer.Subscribe(_settings.StopProcessTopic, _ =>
         {
-            _logger.LogInformation("subscribe event for stopping process");
             _processService.StopProcess();
         }, cancellationToken);
 
@@ -56,12 +52,12 @@ internal class Agent : IAgent
 
     private void StartOrAttachProcess(RemoteProcessModel processModel, CancellationToken cancellationToken)
     {
-        //var runningProcess = _processService.GetRunningProcess(processModel.ProcessId);
+        var runningProcess = _processService.GetRunningProcess(processModel.ProcessId);
 
-        //if (runningProcess is not null)
-        //    _processService.AttachToProcess(processModel, runningProcess,
-        //        outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
-        //else
+        if (runningProcess is not null)
+            _processService.AttachToProcess(processModel, runningProcess,
+                outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
+        else
             _processService.StartProcess(processModel,
                 outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
     }

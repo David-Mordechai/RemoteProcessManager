@@ -28,7 +28,6 @@ internal class ProcessService : IProcessService
             streamLogsAction.Invoke($"Process file {processModel.FullName}, not found.");
             return;
         }
-
         Task.Factory.StartNew(() =>
         {
             try
@@ -79,21 +78,11 @@ internal class ProcessService : IProcessService
         {
             try
             {
-                _logger.LogInformation("Attaching to running process - {ProcessId}", processModel.ProcessId);
-                streamLogsAction.Invoke($"Attaching to running process - {processModel.ProcessId}");
+                _logger.LogInformation("Attaching to running process - {ProcessId}", process.Id);
+                streamLogsAction.Invoke($"Attaching to running process - {process.Id}");
                 AttachEventsToProcess(process, streamLogsAction);
-                var startInfo = new ProcessStartInfo
-                {
-                    FileName = processModel.FullName,
-                    Arguments = processModel.Arguments,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-                process.StartInfo = startInfo;
-                process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+
+                process.EnableRaisingEvents = true;
 
                 // Wait for the process to exit and release resources
                 process.WaitForExit();
@@ -101,9 +90,9 @@ internal class ProcessService : IProcessService
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Fail to attach to running process - {ProcessId}", processModel.ProcessId);
+                _logger.LogError(e, "Fail to attach to running process - {ProcessId}", process.Id);
                 streamLogsAction.Invoke(
-                    $"Fail to attach to running process - {processModel.ProcessId}, Error: {e.Message}");
+                    $"Fail to attach to running process - {process.Id}, Error: {e.Message}");
             }
         });
     }
@@ -120,12 +109,14 @@ internal class ProcessService : IProcessService
 
         process.ErrorDataReceived += (_, e) =>
         {
+            var cachedRemoteProcessModel = _cacheService.Get(_settings.AgentName);
+            if (cachedRemoteProcessModel is null) return;
+            
             _logger.LogError("Error occurred in remote process: {ErrorMessage}", e.Data);
             _logger.LogInformation("Attempt to restart process...");
             streamLogsAction.Invoke($"Error occurred in remote process: {e.Data}");
             streamLogsAction.Invoke("Attempt to restart process...");
-            var cachedRemoteProcessModel = _cacheService.Get(_settings.AgentName);
-            if (cachedRemoteProcessModel is not null) OnRestartProcess?.Invoke(this, cachedRemoteProcessModel);
+            OnRestartProcess?.Invoke(this, cachedRemoteProcessModel);
         };
     }
 
@@ -136,16 +127,16 @@ internal class ProcessService : IProcessService
         var process = GetRunningProcess(cachedRemoteProcessModel.ProcessId);
         if (process?.HasExited is not false) return;
 
-        _logger.LogWarning("Process stopped - ProcessId {ProcessId}", process.Id);
+        _logger.LogWarning("Killing process - ProcessId {ProcessId}", process.Id);
         process.Kill();
-        process.WaitForExit();
         process.Dispose();
-
+       
         _cacheService.Delete(_settings.AgentName);
     }
 
     public Process? GetRunningProcess(int? processId)
     {
+        processId ??= _cacheService.Get(_settings.AgentName)?.ProcessId;
         var process = Process.GetProcesses().FirstOrDefault(x => x.Id == processId);
         return process;
     }

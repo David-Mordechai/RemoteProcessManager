@@ -19,9 +19,7 @@ public class Worker : BackgroundService
     protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Worker started as {AgentMode}...", _settings.AgentMode.ToString("G"));
-        
         _agent.Start(cancellationToken);
-        
         return Task.CompletedTask;
     }
 }
