@@ -15,8 +15,7 @@ internal class TempFileService<T> : ICacheService<T>
 
     public void Save(string fileName, T content)
     {
-        var tempFilePath = Path.GetTempPath();
-        var tempFile = $"{tempFilePath}tmp_{fileName}.tmp";
+        var tempFile = $"{Path.GetTempPath()}tmp_{fileName}.tmp";
         try
         {
             var jsonContent = JsonSerializer.Serialize(content);
@@ -35,12 +34,11 @@ internal class TempFileService<T> : ICacheService<T>
     {
         if (_cachedObject is not null) return _cachedObject;
 
-        var tempFilePath = Path.GetTempPath();
-        var tempFile = $"{tempFilePath}tmp_{fileName}.tmp";
+        var tempFile = $"{Path.GetTempPath()}tmp_{fileName}.tmp";
         if (File.Exists(tempFile) is false) return default;
-        using var fs = File.Open(tempFile, FileMode.Open);
         try
         {
+            using var fs = File.Open(tempFile, FileMode.Open);
             using var reader = new StreamReader(fs);
             var content = reader.ReadToEnd();
             var obj = JsonSerializer.Deserialize<T>(content)!;
@@ -56,8 +54,7 @@ internal class TempFileService<T> : ICacheService<T>
 
     public void Delete(string fileName)
     {
-        var tempFilePath = Path.GetTempPath();
-        var tempFile = $"{tempFilePath}tmp_{fileName}.tmp";
+        var tempFile = $"{Path.GetTempPath()}tmp_{fileName}.tmp";
         if (File.Exists(tempFile) is false) return;
         try
         {

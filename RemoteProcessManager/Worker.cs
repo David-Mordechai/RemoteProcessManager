@@ -3,7 +3,7 @@ using RemoteProcessManager.Models;
 
 namespace RemoteProcessManager;
 
-public class Worker : BackgroundService
+internal class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly Settings _settings;

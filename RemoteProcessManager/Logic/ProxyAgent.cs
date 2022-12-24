@@ -10,20 +10,17 @@ internal class ProxyAgent : IAgent
     private readonly Settings _settings;
     private readonly IConsumer _consumer;
     private readonly IProducer _producer;
-    private readonly IHostApplicationLifetime _lifetime;
 
     public ProxyAgent(Settings settings,
-        IConsumer consumer, IProducer producer, IHostApplicationLifetime lifetime)
+        IConsumer consumer, IProducer producer)
     {
         _settings = settings;
         _consumer = consumer;
         _producer = producer;
-        _lifetime = lifetime;
     }
 
     public void Start(CancellationToken cancellationToken)
     {
-        Console.CancelKeyPress += (_, _) => { _lifetime.StopApplication(); };
         cancellationToken.Register(() => _producer.Produce(_settings.StopProcessTopic, "stop", cancellationToken));
 
         _producer.Produce(_settings.StartProcessTopic, JsonSerializer.Serialize(new RemoteProcessModel
