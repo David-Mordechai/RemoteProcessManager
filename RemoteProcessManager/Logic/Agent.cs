@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using RemoteProcessManager.Logic.Interfaces;
 using RemoteProcessManager.MessageBroker;
 using RemoteProcessManager.Models;
@@ -28,7 +29,11 @@ internal class Agent : IAgent
     {
         var cachedRemoteProcessModel = _cacheService.Get(_settings.AgentName);
         if (cachedRemoteProcessModel is not null)
-            StartOrAttachProcess(cachedRemoteProcessModel, cancellationToken);
+        {
+            _processService.StartProcess(cachedRemoteProcessModel,
+                outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
+            //StartOrAttachProcess(cachedRemoteProcessModel, cancellationToken);
+        }
 
         _consumer.Subscribe(_settings.StartProcessTopic,
             processModelJson =>

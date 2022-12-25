@@ -79,13 +79,13 @@ internal class ProcessService : IProcessService
             {
                 _logger.LogInformation("Attaching to running process - {ProcessId}", process.Id);
                 streamLogsAction.Invoke($"Attaching to running process - {process.Id}");
-                AttachEventsToProcess(process, streamLogsAction);
+                //AttachEventsToProcess(process, streamLogsAction);
 
-                process.EnableRaisingEvents = true;
+                //process.EnableRaisingEvents = true;
 
-                // Wait for the process to exit and release resources
-                process.WaitForExit();
-                process.Close();
+                //// Wait for the process to exit and release resources
+                //process.WaitForExit();
+                //process.Close();
             }
             catch (Exception e)
             {
