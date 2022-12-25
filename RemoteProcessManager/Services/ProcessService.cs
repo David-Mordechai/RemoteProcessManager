@@ -10,7 +10,6 @@ internal class ProcessService : IProcessService
     private readonly Settings _settings;
     private readonly ICacheService<RemoteProcessModel> _cacheService;
 
-
     public event EventHandler<RemoteProcessModel>? OnRestartProcess;
 
     public ProcessService(ILogger<ProcessService> logger, Settings settings, ICacheService<RemoteProcessModel> cacheService)

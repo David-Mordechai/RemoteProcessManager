@@ -43,6 +43,5 @@ internal class RedisProducer : IProducer
         _producer?.Multiplexer.Close();
         _producer = null;
         _redis?.Dispose();
-
     }
 }
