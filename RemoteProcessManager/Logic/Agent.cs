@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Text.Json;
+﻿using System.Text.Json;
 using RemoteProcessManager.Logic.Interfaces;
 using RemoteProcessManager.MessageBroker;
 using RemoteProcessManager.Models;
@@ -32,7 +31,6 @@ internal class Agent : IAgent
         {
             _processService.StartProcess(cachedRemoteProcessModel,
                 outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
-            //StartOrAttachProcess(cachedRemoteProcessModel, cancellationToken);
         }
 
         _consumer.Subscribe(_settings.StartProcessTopic,
@@ -40,7 +38,9 @@ internal class Agent : IAgent
             {
                 var processModel = JsonSerializer.Deserialize<RemoteProcessModel>(processModelJson);
                 if (processModel is null) return;
-                StartOrAttachProcess(processModel, cancellationToken);
+                
+                _processService.StartProcess(processModel,
+                    outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
             }, cancellationToken);
 
         _consumer.Subscribe(_settings.StopProcessTopic, _ =>
@@ -53,17 +53,5 @@ internal class Agent : IAgent
             _processService.StartProcess(processModel,
                 outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
         };
-    }
-
-    private void StartOrAttachProcess(RemoteProcessModel processModel, CancellationToken cancellationToken)
-    {
-        var runningProcess = _processService.GetRunningProcess(processModel.ProcessId);
-
-        if (runningProcess is not null)
-            _processService.AttachToProcess(processModel, runningProcess,
-                outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
-        else
-            _processService.StartProcess(processModel,
-                outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
     }
 }
