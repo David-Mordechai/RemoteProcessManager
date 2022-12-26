@@ -81,20 +81,12 @@ internal class ProcessService : IProcessService
 
             _logger.LogInformation("Process started - ProcessId {ProcessId}", process.Id);
             streamLogsAction.Invoke($"Process started - ProcessId {process.Id}");
-
-            //// Wait for the process to exit and release resources ?????????????????????????????????????
-            //process.WaitForExit();
-            //process.Close();
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Start process Failed - {ProcessFullName}", processModel.FullName);
             streamLogsAction.Invoke($"Start process Failed - {processModel.FullName}, Error: {e.Message}");
         }
-        //Task.Factory.StartNew(() =>
-        //{
-           
-        //});
     }
 
     public void StopProcess()
@@ -111,7 +103,7 @@ internal class ProcessService : IProcessService
         _cacheService.Delete(_settings.AgentName);
     }
 
-    public Process? GetRunningProcess(int? processId)
+    private Process? GetRunningProcess(int? processId)
     {
         processId ??= _cacheService.Get(_settings.AgentName)?.ProcessId;
         var process = Process.GetProcesses().FirstOrDefault(x => x.Id == processId);

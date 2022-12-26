@@ -43,9 +43,3 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/processService", ([FromServices] Settings appSettings) => $"Running in mode {appSettings.AgentMode:G}");
 
 app.Run($"http://*:{settings.HttpPort}");
-
-/*
- * 1. agent need to start from temp file
-   2. if remote process crashes and not canceled then kill agent process for watch dog to started again
-   3. after watch dog started again agent check if remote process is running than connect to it and subscribe to stream output again
- */
