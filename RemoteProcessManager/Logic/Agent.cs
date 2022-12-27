@@ -29,6 +29,7 @@ internal class Agent : IAgent
         var cachedRemoteProcessModel = _cacheService.Get(_settings.AgentName);
         if (cachedRemoteProcessModel is not null)
         {
+            _processService.StopProcess();
             _processService.StartProcess(cachedRemoteProcessModel,
                 outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
         }

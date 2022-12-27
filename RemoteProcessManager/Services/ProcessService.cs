@@ -29,7 +29,7 @@ internal class ProcessService : IProcessService
         }
 
         var runningProcess = GetRunningProcess(processModel.ProcessId);
-        if (runningProcess is not null)
+        if (runningProcess?.HasExited is false)
         {
             _logger.LogInformation("Attaching to running process - {ProcessId}", runningProcess.Id);
             streamLogsAction.Invoke($"Attaching to running process - {runningProcess.Id}");
@@ -38,7 +38,6 @@ internal class ProcessService : IProcessService
 
         try
         {
-            StopProcess();
             _logger.LogInformation("Starting process - {ProcessFullName}", processModel.FullName);
             streamLogsAction.Invoke($"Starting process - {processModel.FullName}");
 
@@ -98,6 +97,7 @@ internal class ProcessService : IProcessService
 
         _logger.LogWarning("Killing process - ProcessId {ProcessId}", process.Id);
         process.Kill();
+        process.Close();
         process.Dispose();
        
         _cacheService.Delete(_settings.AgentName);
