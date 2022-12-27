@@ -106,6 +106,7 @@ internal class ProcessService : IProcessService
     private Process? GetRunningProcess(int? processId)
     {
         processId ??= _cacheService.Get(_settings.AgentName)?.ProcessId;
+        if (processId is null) return null;
         var process = Process.GetProcesses().FirstOrDefault(x => x.Id == processId);
         return process;
     }
