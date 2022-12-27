@@ -21,18 +21,21 @@ internal class RedisProducer : IProducer
         }
     }
 
-    public void Produce(string topic, string message, CancellationToken cancellationToken)
+    public bool Produce(string topic, string message, CancellationToken cancellationToken)
     {
         try
         {
-            _producer?.Publish(topic, message);
+            var clientsCount =_producer?.Publish(topic, message);
 
             if (cancellationToken.IsCancellationRequested)
                 Dispose();
+
+            return clientsCount > 0;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "RedisConsumer failed, {Error}", ex.Message);
+            return false;
         }
     }
 

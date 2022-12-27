@@ -2,5 +2,5 @@
 
 public interface IProducer : IDisposable
 {
-    void Produce(string topic, string message, CancellationToken cancellationToken);
+    bool Produce(string topic, string message, CancellationToken cancellationToken);
 }
