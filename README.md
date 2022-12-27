@@ -4,26 +4,17 @@
 
 ### For Redis run docker-compose.yaml
 
-## To start a Agent open terminal at RemoteProcessManager bin directory
+### To start a Agent or AgentProxy open terminal at RemoteProcessManager bin directory
+### Arguments
 
+![image](https://user-images.githubusercontent.com/53663592/209629986-f869533a-ad1b-4076-95a7-f1afee47d2a7.png)
+
+Agent example
 ```ps
-    .\RemoteProcessManager.exe 1 video1 127.0.0.1:6379 5001
+.\RemoteProcessManager.exe --agent-mode 1 --agent-name video1 --messageBroker-url 127.0.0.1:6379 --http-port 5001
 ```
 
-* 1 - RemoteProcessManager Mode - 1 => Agent, 2 => AgentProxy
-* video1 - AgentName, building message broker topics from this name
-* 127.0.0.1:6379 - Message broker url
-* 5001 - RemoteProcessManager http Port
-
-## To start a AgentProxy open terminal at RemoteProcessManager bin directory
-
+AgentProxy example
 ```ps
-    .\RemoteProcessManager.exe 2 video1 127.0.0.1:6379 5002 "C:\dev\RemoteProcessManager\WorkerTester\bin\Debug\net6.0\WorkerTester.exe" "a1 a2 a3"
+.\RemoteProcessManager.exe --agent-mode 2 --agent-name video1 --messageBroker-url 127.0.0.1:6379 --http-port 5002 --process-name "C:\dev\RemoteProcessManager\WorkerTester\bin\Debug\net6.0\WorkerTester.exe" --process-args "a1 a2 a3"
 ```
-
-* 2 - RemoteProcessManager Mode - 1 => Agent, 2 => AgentProxy
-* video1 - AgentName, building message broker topics from this name
-* 127.0.0.1:6379 - Message broker url
-* 5002 - RemoteProcessManager http Port
-* "C:\dev\RemoteProcessManager\WorkerTester\bin\Debug\net6.0\WorkerTester.exe" - ProcessFullName to send Agent
-* "a1 a2 a3" - ProcessArguments to send Agent
