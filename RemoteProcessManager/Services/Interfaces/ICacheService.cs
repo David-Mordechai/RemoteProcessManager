@@ -2,7 +2,7 @@
 
 public interface ICacheService<T>
 {
-    void Save(string fileName, T content);
-    T? Get(string fileName);
-    void Delete(string fileName);
+    void Save(string name, T content);
+    T? Get(string name);
+    void Delete(string name);
 }

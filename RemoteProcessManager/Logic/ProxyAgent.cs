@@ -35,7 +35,7 @@ internal class ProxyAgent : IAgent
 
         if (messageDelivered is false)
         {
-            _logger.LogError("Appropriate destination Agent is not running...");
+            _logger.LogError("Destination Agent for {AgentName}, not running..." , _settings.AgentName);
             _lifetime.StopApplication();
         }
 

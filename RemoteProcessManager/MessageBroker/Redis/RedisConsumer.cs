@@ -17,7 +17,7 @@ internal class RedisConsumer : IConsumer
 
         if (_consumer is null)
         {
-            throw new Exception("Fail to subscribe to Redis");
+            throw new Exception("Failed to create Redis Consumer.");
         }
     }
 
@@ -35,7 +35,7 @@ internal class RedisConsumer : IConsumer
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "RedisConsumer failed, {Error}", ex.Message);
+            _logger.LogError(ex, "Redis failed to subscribe to Topic {Topic}., {Error}", topic, ex.Message);
         }
     }
 

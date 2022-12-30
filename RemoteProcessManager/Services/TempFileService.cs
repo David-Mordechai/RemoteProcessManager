@@ -13,9 +13,9 @@ internal class TempFileService<T> : ICacheService<T>
         _logger = logger;
     }
 
-    public void Save(string fileName, T content)
+    public void Save(string name, T content)
     {
-        var tempFile = $"{Path.GetTempPath()}tmp_{fileName}.tmp";
+        var tempFile = $"{Path.GetTempPath()}tmp_{name}.tmp";
         try
         {
             var jsonContent = JsonSerializer.Serialize(content);
@@ -30,11 +30,11 @@ internal class TempFileService<T> : ICacheService<T>
         }
     }
 
-    public T? Get(string fileName)
+    public T? Get(string name)
     {
         if (_cachedObject is not null) return _cachedObject;
 
-        var tempFile = $"{Path.GetTempPath()}tmp_{fileName}.tmp";
+        var tempFile = $"{Path.GetTempPath()}tmp_{name}.tmp";
         if (File.Exists(tempFile) is false) return default;
         try
         {
@@ -52,9 +52,9 @@ internal class TempFileService<T> : ICacheService<T>
         }
     }
 
-    public void Delete(string fileName)
+    public void Delete(string name)
     {
-        var tempFile = $"{Path.GetTempPath()}tmp_{fileName}.tmp";
+        var tempFile = $"{Path.GetTempPath()}tmp_{name}.tmp";
         if (File.Exists(tempFile) is false) return;
         try
         {

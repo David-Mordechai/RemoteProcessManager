@@ -17,7 +17,7 @@ internal class RedisProducer : IProducer
 
         if (_producer is null)
         {
-            throw new Exception("Fail to subscribe to Redis");
+            throw new Exception("Fail to create Redis Producer.");
         }
     }
 
@@ -25,16 +25,15 @@ internal class RedisProducer : IProducer
     {
         try
         {
-            var clientsCount =_producer?.Publish(topic, message);
+            var clientsCount = _producer?.Publish(topic, message);
 
-            if (cancellationToken.IsCancellationRequested)
-                Dispose();
+            if (cancellationToken.IsCancellationRequested) Dispose();
 
             return clientsCount > 0;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "RedisConsumer failed, {Error}", ex.Message);
+            _logger.LogError(ex, "Redis failed to produce message., {Error}", ex.Message);
             return false;
         }
     }

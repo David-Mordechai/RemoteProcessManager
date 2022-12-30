@@ -15,9 +15,10 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var result = Parser.Default.ParseArguments<Settings>(args);
-if (result.Errors.Any()) return;
-var settings = result.Value;
+var arguments = Parser.Default.ParseArguments<Settings>(args);
+if (ValidateArguments(arguments)) return;
+
+var settings = arguments.Value;
 
 builder.Services.AddSingleton(settings!);
 builder.Services.AddSingleton<IProducer, RedisProducer>();
@@ -40,6 +41,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/processService", ([FromServices] Settings appSettings) => $"Running in mode {appSettings.AgentMode:G}");
+app.MapGet("/processService", ([FromServices] Settings appSettings) => $"Worker running as {appSettings.AgentMode:G}");
 
 app.Run($"http://*:{settings.HttpPort}");
+
+bool ValidateArguments(ParserResult<Settings> parserResult)
+{
+    if (parserResult.Errors.Any()) return true;
+    if (parserResult.Value.AgentMode is ModeType.AgentProxy &&
+        string.IsNullOrEmpty(parserResult.Value.ProcessFullName))
+        throw new ArgumentException("AgentProxy must have a process-name argument");
+    return false;
+}
