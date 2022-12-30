@@ -45,7 +45,7 @@ app.MapGet("/processService", ([FromServices] Settings appSettings) => $"Worker 
 
 app.Run($"http://*:{settings.HttpPort}");
 
-bool ValidateArguments(ParserResult<Settings> parserResult)
+static bool ValidateArguments(ParserResult<Settings> parserResult)
 {
     if (parserResult.Errors.Any()) return true;
     if (parserResult.Value.AgentMode is ModeType.AgentProxy &&
