@@ -20,4 +20,4 @@ AgentProxy example
 ```
 ## Remote Process Arguments - Important!!!
 ### If you want to pass remote process arguments then you should passed within a string, 
-### example: "\"-n david -a a1\""
+### example: "\\"-n david -a a1\\""
