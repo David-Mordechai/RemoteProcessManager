@@ -51,6 +51,7 @@ internal class Agent : IAgent
 
         _processService.OnRestartProcess += (_, processModel) =>
         {
+            _processService.StopProcess();
             _processService.StartProcess(processModel,
                 outputData => _producer.Produce(_settings.StreamLogsTopic, outputData, cancellationToken));
         };
