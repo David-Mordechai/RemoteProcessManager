@@ -10,7 +10,7 @@ internal static class ArgumentsValidator
     {
         if (parserResult.Errors.Any()) return true;
 
-           if (parserResult.Value.AgentMode is not ModeType.AgentProxy) return false;
+        if (parserResult.Value.AgentMode is not ModeType.AgentProxy) return false;
 
         if (string.IsNullOrEmpty(parserResult.Value.ProcessFullName))
             throw new ArgumentException("AgentProxy must have a process-name argument");
