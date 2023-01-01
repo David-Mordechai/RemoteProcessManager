@@ -19,4 +19,5 @@ AgentProxy example
 .\RemoteProcessManager.exe --agent-mode 2 --agent-name video1 --messageBroker-url 127.0.0.1:6379 --http-port 5002 --process-name "C:\dev\RemoteProcessManager\WorkerTester\bin\Debug\net6.0\WorkerTester.exe" --process-args "\"-n david -a a1\""
 ```
 ## Remote Process Arguments - Important!!!
-### If you want to pass remote process arguments then you should passed within a string, example "\"-n david -a a1\""
+### If you want to pass remote process arguments then you should passed within a string, 
+### example: "\"-n david -a a1\""
