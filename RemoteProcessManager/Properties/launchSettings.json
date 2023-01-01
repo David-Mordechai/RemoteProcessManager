@@ -2,7 +2,7 @@
   "profiles": {
     "RemoteProcessManager": {
       "commandName": "Project",
-      "commandLineArgs": "--agent-mode 1 --agent-name video1 --messageBroker-url 127.0.0.1:6379 --http-port 5001",
+      "commandLineArgs": "--agent-mode 2 --agent-name video1 --messageBroker-url 127.0.0.1:6379 --http-port 5002 --process-name \"C:\\dev\\RemoteProcessManager\\WorkerTester\\bin\\Debug\\net6.0\\WorkerTester.exe\" --process-args \"\\\"-n david -a a1\\\"\"",
       "launchBrowser": true,
       "launchUrl": "swagger",
       "environmentVariables": {

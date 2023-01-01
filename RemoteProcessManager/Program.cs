@@ -16,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var arguments = Parser.Default.ParseArguments<Settings>(args);
-if (ValidateArguments(arguments)) return;
+if (InvalidArguments(arguments)) return;
 
 var settings = arguments.Value;
 
@@ -45,11 +45,18 @@ app.MapGet("/processService", ([FromServices] Settings appSettings) => $"Worker 
 
 app.Run($"http://*:{settings.HttpPort}");
 
-static bool ValidateArguments(ParserResult<Settings> parserResult)
+static bool InvalidArguments(ParserResult<Settings> parserResult)
 {
     if (parserResult.Errors.Any()) return true;
+    
     if (parserResult.Value.AgentMode is ModeType.AgentProxy &&
         string.IsNullOrEmpty(parserResult.Value.ProcessFullName))
         throw new ArgumentException("AgentProxy must have a process-name argument");
+    
+    if (string.IsNullOrEmpty(parserResult.Value.ProcessArguments) is false)
+    {
+        parserResult.Value.ProcessArguments = parserResult.Value.ProcessArguments.Replace("\"", "");
+    }
+    
     return false;
 }
