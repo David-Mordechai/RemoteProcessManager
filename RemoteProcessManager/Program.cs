@@ -20,13 +20,10 @@ var arguments = Parser.Default.ParseArguments<Settings>(args);
 var (invalid, errorMessage) = ArgumentsValidator.Validate(arguments);
 if (invalid)
 {
-    var defaultColor = Console.ForegroundColor;
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"{errorMessage}");
-    Console.ForegroundColor = defaultColor;
+    ArgumentsValidator.ConsoleWriteError(errorMessage);
     return;
 }
-
+ 
 var settings = arguments.Value;
 
 builder.Services.AddSingleton(settings!);
