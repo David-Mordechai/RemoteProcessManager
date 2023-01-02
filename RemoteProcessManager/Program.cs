@@ -17,7 +17,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var arguments = Parser.Default.ParseArguments<Settings>(args);
-if (ArgumentsValidator.IsInvalid(arguments)) return;
+var (invalid, errorMessage) = ArgumentsValidator.Validate(arguments);
+if (invalid)
+{
+    var defaultColor = Console.ForegroundColor;
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine($"{errorMessage}");
+    Console.ForegroundColor = defaultColor;
+    return;
+}
 
 var settings = arguments.Value;
 
