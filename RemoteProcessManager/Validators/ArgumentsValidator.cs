@@ -26,4 +26,12 @@ internal static class ArgumentsValidator
 
         return (invalid: false, string.Empty);
     }
+
+    public static void ConsoleWriteError(string errorMessage)
+    {
+        var defaultColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(errorMessage);
+        Console.ForegroundColor = defaultColor;
+    }
 }
