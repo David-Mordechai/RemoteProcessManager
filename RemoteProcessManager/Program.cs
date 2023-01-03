@@ -16,17 +16,14 @@ var builder = WebApplication.CreateBuilder();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var arguments = Parser.Default.ParseArguments<Settings>(args);
-var (invalid, errorMessage) = ArgumentsValidator.Validate(arguments);
-if (invalid)
-{
-    ArgumentsValidator.ConsoleWriteError(errorMessage);
-    return;
-}
- 
-var settings = arguments.Value;
+var parser = new Parser(parserSettings => parserSettings.GetoptMode = true);
+var arguments = parser.ParseArguments<Settings>(args);
+var invalidArguments = ArgumentsValidator.Validate(arguments);
+if (invalidArguments) return;
 
+var settings = arguments.Value;
 builder.Services.AddSingleton(settings!);
+
 builder.Services.AddSingleton<IProducer, RedisProducer>();
 builder.Services.AddSingleton<IConsumer, RedisConsumer>();
 builder.Services.AddSingleton<IProcessService, ProcessService>();
@@ -49,4 +46,12 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/processService", ([FromServices] Settings appSettings) => $"Worker running as {appSettings.AgentMode:G}");
 
-app.Run($"http://*:{settings.HttpPort}");
+try
+{
+    app.Run($"http://*:{settings.HttpPort}");
+}
+catch (Exception e)
+{
+    if (e is OperationCanceledException) return;
+    throw;
+}
